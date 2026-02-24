@@ -1,5 +1,7 @@
 import streamlit as st
 
+GENRE_OPTIONS = ["rock", "lofi", "pop", "jazz", "electronic", "ambient", "other"]
+
 from playlist_logic import (
     DEFAULT_PROFILE,
     Song,
@@ -7,7 +9,6 @@ from playlist_logic import (
     compute_playlist_stats,
     history_summary,
     lucky_pick,
-    merge_playlists,
     normalize_song,
     search_songs,
 )
@@ -212,7 +213,7 @@ def profile_sidebar():
 
     profile["favorite_genre"] = st.sidebar.selectbox(
         "Favorite genre",
-        options=["rock", "lofi", "pop", "jazz", "electronic", "ambient", "other"],
+        options=GENRE_OPTIONS,
         index=0,
     )
 
@@ -232,7 +233,7 @@ def add_song_sidebar():
     artist = st.sidebar.text_input("Artist")
     genre = st.sidebar.selectbox(
         "Genre",
-        options=["rock", "lofi", "pop", "jazz", "electronic", "ambient", "other"],
+        options=GENRE_OPTIONS,
     )
     energy = st.sidebar.slider("Energy", min_value=1, max_value=10, value=5)
     tags_text = st.sidebar.text_input("Tags (comma separated)")
@@ -283,6 +284,21 @@ def playlist_tabs(playlists):
             render_playlist(label, playlists.get(label, []))
 
 
+def format_song(song, detailed=False):
+    """Format a song dict into a display string."""
+    title = song.get("title", "?")
+    artist = song.get("artist", "?")
+    mood = song.get("mood", "?")
+    if detailed:
+        tags = ", ".join(song.get("tags", []))
+        return (
+            f"**{title}** by {artist} "
+            f"(genre {song.get('genre', '?')}, energy {song.get('energy', '?')}, mood {mood}) "
+            f"[{tags}]"
+        )
+    return f"{title} by {artist} (mood {mood})"
+
+
 def render_playlist(label, songs):
     st.subheader(f"{label} playlist")
     if not songs:
@@ -297,13 +313,7 @@ def render_playlist(label, songs):
         return
 
     for song in filtered:
-        mood = song.get("mood", "?")
-        tags = ", ".join(song.get("tags", []))
-        st.write(
-            f"- **{song['title']}** by {song['artist']} "
-            f"(genre {song['genre']}, energy {song['energy']}, mood {mood}) "
-            f"[{tags}]"
-        )
+        st.write(f"- {format_song(song, detailed=True)}")
 
 
 def lucky_section(playlists):
@@ -322,10 +332,7 @@ def lucky_section(playlists):
             st.warning("No songs available for this mode.")
             return
 
-        st.success(
-            f"Lucky song: {pick['title']} by {pick['artist']} "
-            f"(mood {pick.get('mood', '?')})"
-        )
+        st.success(f"Lucky song: {format_song(pick)}")
 
         history = st.session_state.history
         history.append(pick)
@@ -373,9 +380,7 @@ def history_section():
     show_details = st.checkbox("Show full history")
     if show_details:
         for song in history:
-            st.write(
-                f"{song.get('mood', '?')}: {song['title']} by {song['artist']}"
-            )
+            st.write(f"{song.get('mood', '?')}: {format_song(song)}")
 
 
 def clear_controls():
@@ -405,13 +410,12 @@ def main():
     songs = st.session_state.songs
 
     base_playlists = build_playlists(songs, profile)
-    merged_playlists = merge_playlists(base_playlists, {})
 
-    playlist_tabs(merged_playlists)
+    playlist_tabs(base_playlists)
     st.divider()
-    lucky_section(merged_playlists)
+    lucky_section(base_playlists)
     st.divider()
-    stats_section(merged_playlists)
+    stats_section(base_playlists)
     st.divider()
     history_section()
 
