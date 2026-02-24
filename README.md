@@ -1,113 +1,75 @@
 # Playlist Chaos
 
-Your AI assistant tried to build a smart playlist generator. The app runs, but some of the behavior is unpredictable. Your task is to explore the app, investigate the code, and use an AI assistant to debug and improve it.
+A smart playlist generator built with Streamlit. Songs are automatically classified into Hype, Chill, or Mixed playlists based on energy levels, genre keywords, and a configurable mood profile.
 
-This activity is your first chance to practice AI-assisted debugging on a codebase that is slightly messy, slightly mysterious, and intentionally imperfect.
+## Getting Started
 
-You do not need to understand everything at once. Approach the app as a curious investigator, work with an AI assistant to explain what you find, and make targeted improvements.
+### Prerequisites
+
+- Python 3.10+
+- Streamlit
+
+### Installation
+
+```bash
+pip install streamlit
+```
+
+### Running the app
+
+```bash
+streamlit run app.py
+```
+
+---
+
+## Features
+
+- **Mood-based playlists** — Songs are automatically sorted into Hype, Chill, or Mixed tabs based on energy and genre
+- **Configurable mood profile** — Adjust hype/chill energy thresholds and set a favorite genre
+- **Add songs** — Add new songs with title, artist, genre, energy, and tags (with duplicate detection)
+- **Search** — Filter any playlist by artist name
+- **Lucky pick** — Get a random song from any, hype, or chill pools
+- **Stats** — View total counts, hype ratio, average energy, and most common artist
+- **History** — Track and review past lucky picks by mood
 
 ---
 
 ## How the code is organized
 
-### `app.py`  
+### `app.py`
 
-The Streamlit user interface. It handles things like:
+The Streamlit user interface.
 
-- Showing and updating the mood profile  
-- Adding songs  
-- Displaying playlists  
-- Lucky pick  
-- Stats and history
+- `init_state()` — Initializes session state (songs, profile, history)
+- `default_songs()` — Returns the built-in list of 22 preset songs
+- `profile_sidebar()` — Renders mood profile controls (name, energy thresholds, favorite genre, include mixed toggle)
+- `add_song_sidebar()` — Renders the add-song form with duplicate detection and success/warning feedback
+- `playlist_tabs(playlists)` — Renders Hype, Chill, and optionally Mixed playlists as tabs
+- `format_song(song, detailed=False)` — Formats a song dict into a display string (shared helper used across views)
+- `render_playlist(label, songs)` — Renders a single playlist tab with search-by-artist filtering
+- `lucky_section(playlists)` — Renders the lucky pick controls and adds picks to history
+- `stats_section(playlists)` — Displays playlist statistics (counts, hype ratio, average energy, top artist)
+- `history_section()` — Shows pick history summary and optional full history
+- `clear_controls()` — Renders reset and clear buttons in the sidebar
+- `main()` — Entry point that wires everything together
+- `GENRE_OPTIONS` — Shared list of genre choices used by both the profile and add-song dropdowns
 
-### `playlist_logic.py`  
+### `playlist_logic.py`
 
-The logic behind the app, including:
+The logic behind the app.
 
-- Normalizing and classifying songs  
-- Building playlists  
-- Merging playlist data  
-- Searching  
-- Computing statistics  
-- Lucky pick mechanics
-
-You will need to look at both files to understand how the app behaves.
-
----
-
-## What you will do
-
-### 1. Explore the app  
-
-Run the app and try things out:
-
-- Add several songs with different titles, artists, genres, and energy levels  
-- Change the mood profile  
-- Use the search box  
-- Try the lucky pick  
-- Inspect the playlist tabs and stats  
-- Look at the history  
-
-As you explore, write down at least five things that feel confusing, inconsistent, or strange. These might be bugs, quirks, or unexpected design decisions.
-
-### 2. Ask AI for help understanding the code  
-
-Pick one issue from your list. Use an AI coding assistant to:
-
-- Explain the relevant code sections  
-- Walk through what the code is supposed to do  
-- Suggest reasons the behavior might not match expectations  
-
-For example:
-
-> "Here is the function that classifies songs. The app is mislabeling some songs. Help me understand what the function is doing and where the logic might need adjustment."
-
-Before making changes, summarize in your own words what you think is happening.
-
-### 3. Fix at least four issues  
-
-Make improvements based on your investigation.
-
-For each fix:
-
-- Identify the source of the issue  
-- Decide whether to accept or adjust the AI assistant's suggestions  
-- Update the code  
-- Add a short comment describing the fix  
-
-Your fixes may involve logic, calculations, search behavior, playlist grouping, lucky pick behavior, or anything else you discover.
-
-### 4. Test your changes  
-
-After each fix, try interacting with the app again:
-
-- Add new songs  
-- Change the profile  
-- Try search and stats  
-- Check whether playlists behave more consistently  
-
-Confirm that the behavior matches your expectations.
-
-### 5. Optional stretch goals  
-
-If you finish early or want an extra challenge, try one of these:
-
-- Improve search behavior  
-- Add a "Recently added" view  
-- Add sorting controls  
-- Improve how Mixed songs are handled  
-- Add new features to the history view  
-- Introduce better error handling for empty playlists  
-- Add a new playlist category of your own design  
-
----
-
-## Tips for success
-
-- You do not need to solve everything. Focus on exploring and learning.  
-- When confused, ask an AI assistant to explain the code or summarize behavior.  
-- Test the app often. Small experiments reveal useful clues.  
-- Treat surprising behavior as something worth investigating.  
-- Stay curious. The unpredictability is intentional and part of the experience.
-
-When you finish, Playlist Chaos will feel more predictable, and you will have taken your first steps into AI-assisted debugging.
+- `clean_string(value, lowercase=False)` — Strips whitespace and optionally lowercases a string
+- `normalize_song(raw)` — Returns a normalized song dict with consistent keys and types
+- `classify_song(song, profile)` — Returns a mood label ("Hype", "Chill", or "Mixed") based on energy, genre, and profile settings
+- `build_playlists(songs, profile)` — Groups songs into Hype/Chill/Mixed playlists by classifying each song
+- `merge_playlists(a, b)` — Merges two playlist maps into a new map (shallow copy, no mutation)
+- `compute_playlist_stats(playlists)` — Computes total count, per-category counts, hype ratio, average energy, and top artist
+- `most_common_artist(songs)` — Returns the most frequently occurring artist and their count
+- `search_songs(songs, query, field)` — Filters songs by substring match on a given field
+- `lucky_pick(playlists, mode)` — Picks a random song from the specified mode (any/hype/chill)
+- `random_choice_or_none(songs)` — Returns a random song or None if the list is empty
+- `history_summary(history)` — Returns a count of Hype/Chill/Mixed picks in the history
+- `Song` — Dict type alias for song data
+- `PlaylistMap` — Dict mapping playlist labels to lists of songs
+- `DEFAULT_PROFILE` — Default mood profile settings
