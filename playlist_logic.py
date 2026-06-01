@@ -1,4 +1,5 @@
 from typing import Dict, List, Optional, Tuple
+import random
 
 Song = Dict[str, object]
 PlaylistMap = Dict[str, List[Song]]
@@ -105,7 +106,7 @@ def compute_playlist_stats(playlists: PlaylistMap) -> Dict[str, object]:
     chill = playlists.get("Chill", [])
     mixed = playlists.get("Mixed", [])
 
-    total = len(hype)+len(chill)+len(mixed)
+    total = len(all_songs)
     hype_ratio = len(hype) / total if total > 0 else 0.0
 
     avg_energy = 0.0
@@ -168,19 +169,17 @@ def lucky_pick(
     mode: str = "any",
 ) -> Optional[Song]:
     """Pick a song from the playlists according to mode."""
-    if mode == "hype":
-        songs = playlists.get("Hype", [])
-    elif mode == "chill":
-        songs = playlists.get("Chill", [])
+    mode_to_label = {"hype": "Hype", "chill": "Chill"}
+    if mode in mode_to_label:
+        songs = playlists.get(mode_to_label[mode], [])
     else:
-        songs = playlists.get("Hype", []) + playlists.get("Chill", []) + playlists.get("Mixed", [])
+        songs = [s for bucket in playlists.values() for s in bucket]
 
     return random_choice_or_none(songs)
 
 
 def random_choice_or_none(songs: List[Song]) -> Optional[Song]:
     """Return a random song or None."""
-    import random
     if not songs:
         return None
 
@@ -193,7 +192,6 @@ def history_summary(history: List[Song]) -> Dict[str, int]:
     for song in history:
         mood = song.get("mood", "Mixed")
         if mood not in counts:
-            counts["Mixed"] += 1
-        else:
-            counts[mood] += 1
+            mood = "Mixed"
+        counts[mood] += 1
     return counts
